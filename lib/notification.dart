@@ -28,7 +28,6 @@ class NotificationsPage extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               title: Text('notifications').tr(),
-              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             ),
             body: Center(
               child: Column(
@@ -53,7 +52,6 @@ class NotificationsPage extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text('notifications').tr(),
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           ),
           body: StreamBuilder<QuerySnapshot>(
             stream: firebaseService.getUserNotifications(),

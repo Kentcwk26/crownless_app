@@ -68,6 +68,9 @@ class _MyAppState extends State<MyApp> {
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
         ),
+        drawerTheme: const DrawerThemeData(
+          backgroundColor: Colors.white,
+        ),
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.black,
           brightness: Brightness.light,
@@ -110,6 +113,9 @@ class _MyAppState extends State<MyApp> {
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
+        ),
+        drawerTheme: const DrawerThemeData(
+          backgroundColor: Colors.black,
         ),
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.white,
@@ -220,7 +226,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("home".tr()),
         actions: [
           IconButton(
@@ -230,89 +235,108 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       drawer: Drawer(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  UserAccountsDrawerHeader(
-                    accountName: Text(widget.user?.displayName ?? 'guest'.tr()),
-                    accountEmail: const SizedBox.shrink(),
-                    currentAccountPicture: CircleAvatar(
-                      backgroundImage: widget.user != null
-                          ? NetworkImage(widget.user!.photoURL ?? '')
-                          : null,
-                      child: widget.user == null ? const Icon(Icons.person, size: 40) : null,
-                    ),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.home),
-                    title: Text('home'.tr()),
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.settings),
-                    title: Text('settings'.tr()),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SettingsPage(
-                            toggleTheme: widget.toggleTheme,
-                            isDarkMode: widget.isDarkMode,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: isLoggedIn
-                    ? ElevatedButtonVariants.danger(
-                        icon: Icon(Icons.logout),
-                        child: Text('logout'.tr()),
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _handleLogout();
-                        },
-                      )
-                    : ElevatedButtonVariants.success(
-                        icon: Icon(Icons.login),
-                        child: Text('login'.tr()),
-                        onPressed: () async {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(context, '/login');
-                        }
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    UserAccountsDrawerHeader(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       ),
+                      accountName: Text(
+                        widget.user?.displayName ?? 'guest'.tr(),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      accountEmail: const SizedBox.shrink(),
+                      currentAccountPicture: CircleAvatar(
+                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                        backgroundImage: widget.user != null
+                            ? NetworkImage(widget.user!.photoURL ?? '')
+                            : null,
+                        child: widget.user == null
+                            ? Icon(
+                                Icons.person,
+                                size: 40,
+                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                              )
+                            : null,
+                      ),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.home),
+                      title: Text('home'.tr()),
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.settings),
+                      title: Text('settings'.tr()),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SettingsPage(
+                              toggleTheme: widget.toggleTheme,
+                              isDarkMode: widget.isDarkMode,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-            )
-          ],
-        ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: isLoggedIn
+                      ? ElevatedButtonVariants.danger(
+                          icon: Icon(Icons.logout),
+                          child: Text('logout'.tr()),
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _handleLogout();
+                          },
+                        )
+                      : ElevatedButtonVariants.success(
+                          icon: Icon(Icons.login),
+                          child: Text('login'.tr()),
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, '/login');
+                          }
+                        ),
+                ),
+              )
+            ],
+          ),
+        )
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 10.0,
-          children: [
-            Image.asset('assets/images/logo.jpg', height: 140),
-            Text(
-              widget.user != null
-                  ? 'welcome_back'.tr(args: [widget.user!.displayName ?? 'User'])
-                  : 'welcome_to_crownless'.tr(),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 10.0,
+            children: [
+              Image.asset('assets/images/logo.jpg', height: 140),
+              Text(
+                widget.user != null
+                    ? 'welcome_back'.tr(args: [widget.user!.displayName ?? 'User'])
+                    : 'welcome_to_crownless'.tr(),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
         ),
-      ),
+      )
     );
   }
 }
@@ -332,7 +356,7 @@ class AuthGate extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        // ⏳ Waiting for auth stream
+
         if (snapshot.connectionState != ConnectionState.active) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
@@ -340,9 +364,7 @@ class AuthGate extends StatelessWidget {
         }
 
         final user = snapshot.data;
-        debugPrint('Auth state changed: user=${user?.uid}');
 
-        // 👤 Guest
         if (user == null) {
           return MyHomePage(
             toggleTheme: toggleTheme,
@@ -351,7 +373,6 @@ class AuthGate extends StatelessWidget {
           );
         }
 
-        // 👤 Logged-in → fetch role
         return FutureBuilder<DocumentSnapshot>(
           future: FirebaseFirestore.instance
               .collection('users')
@@ -367,12 +388,10 @@ class AuthGate extends StatelessWidget {
             final data = docSnapshot.data?.data() as Map<String, dynamic>?;
             final role = data?['role'] ?? 'member';
 
-            // 👑 Admin
             if (role == 'admin') {
               return AdminstratorScreen(user: user);
             }
 
-            // 👤 Member
             return MyHomePage(
               toggleTheme: toggleTheme,
               isDarkMode: isDarkMode,

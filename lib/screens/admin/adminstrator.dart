@@ -16,7 +16,6 @@ class AdminstratorScreen extends StatelessWidget {
     return PopScope(
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           title: Text('admin_dashboard'.tr()),
           actions: [
             IconButton(
@@ -33,14 +32,29 @@ class AdminstratorScreen extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   children: [
                     UserAccountsDrawerHeader(
-                      accountName: Text(user?.displayName?.isNotEmpty == true ? user!.displayName! : 'role_admin'.tr()),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      ),
+                      accountName: Text(
+                        user?.displayName?.isNotEmpty == true
+                            ? user!.displayName!
+                            : 'role_admin'.tr(),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
                       accountEmail: const SizedBox.shrink(),
                       currentAccountPicture: CircleAvatar(
+                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                         backgroundImage: user?.photoURL != null
                             ? NetworkImage(user!.photoURL!)
                             : null,
                         child: user?.photoURL == null
-                            ? const Icon(Icons.admin_panel_settings, size: 40)
+                            ? Icon(
+                                Icons.admin_panel_settings,
+                                size: 40,
+                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                              )
                             : null,
                       ),
                     ),
