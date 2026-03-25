@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "15035334254",
+    "project_id": "crownless",
+    "storage_bucket": "crownless.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:15035334254:android:f101cf4243cd0f53e3f07f",
+        "android_client_info": {
+          "package_name": "com.example.crownless_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "15035334254-6kpab5aejcrche7j5tr4fg8sdu748rp4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.crownless_app",
+            "certificate_hash": "f0c97c16c915a7f622b3f774bb4fe91fab2b68f8"
+          }
+        },
+        {
+          "client_id": "15035334254-eoek90ejsd8nu5geal0qco032cggr56d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHbv_Gl3gTQdVr8g4KKHljNSj_lOw2A7M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "15035334254-eoek90ejsd8nu5geal0qco032cggr56d.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "15035334254-r30a5eqik9cn3eblo4qqdt9i2p5mi7ai.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.crownlessApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
