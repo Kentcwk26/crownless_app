@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../notification.dart';
 import '../../services/firebase_service.dart';
 import '../../utils/color_buttons.dart';
-import 'manageusers.dart';
+import 'infomanagement.dart';
 
 class AdminstratorScreen extends StatelessWidget {
   const AdminstratorScreen({super.key, this.user});
@@ -65,6 +65,16 @@ class AdminstratorScreen extends StatelessWidget {
                         Navigator.pop(context);
                       },
                     ),
+                    ListTile(
+                      leading: const Icon(Icons.supervised_user_circle),
+                      title: Text('manageUsers'.tr()),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ManageUsersPage())),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.edit_document),
+                      title: Text('manage_info'.tr()),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PrivacyPolicyAdminPage())),
+                    ),
                   ],
                 ),
               ),
@@ -115,160 +125,10 @@ class AdminstratorScreen extends StatelessWidget {
             children: [
               Image.asset('assets/images/logo.jpg', height: 200),
               Text('welcome_back'.tr(args: [user?.displayName?.isNotEmpty == true ? user!.displayName! : 'Admin'])),
-              ElevatedButton(
-                onPressed: () => _showSendNotificationDialog(context),
-                child: Text('send_notification'.tr()),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ManageUsersPage())),
-                child: Text('manage_users'.tr()),
-              ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  void _showSendNotificationDialog(BuildContext context) {
-    final titleController = TextEditingController();
-    final bodyController = TextEditingController();
-    bool sendToAll = true;
-    Set<String> selectedUserIds = {};
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('send_notification'.tr()),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: InputDecoration(labelText: 'title'.tr()),
-              ),
-              TextField(
-                controller: bodyController,
-                decoration: InputDecoration(labelText: 'body'.tr()),
-                maxLines: 3,
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: sendToAll,
-                    onChanged: (value) => setState(() => sendToAll = value ?? true),
-                  ),
-                  const Text('send_to_all_users').tr(),
-                ],
-              ),
-              if (!sendToAll)
-                ElevatedButton(
-                  onPressed: () async => await _selectUsers(context, selectedUserIds, setState),
-                  child: Text('select_users_count').tr(args: [selectedUserIds.length.toString()]),
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('cancel').tr(),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final title = titleController.text.trim();
-                final body = bodyController.text.trim();
-                if (title.isEmpty || body.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('title_and_body_required').tr()),
-                  );
-                  return;
-                }
-
-                List<String>? userIds;
-                if (!sendToAll) {
-                  userIds = selectedUserIds.toList();
-                  if (userIds.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('select_users').tr()),
-                    );
-                    return;
-                  }
-                }
-
-                try {
-                  await FirebaseService().sendNotification(
-                    title: title,
-                    body: body,
-                    userIds: userIds,
-                  );
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('notification_sent').tr()),
-                  );
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('notification_failed'.tr(namedArgs: {'error': e.toString()}))),
-                  );
-                }
-              },
-              child: const Text('send').tr(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _selectUsers(BuildContext context, Set<String> selectedUserIds, StateSetter setState) async {
-    try {
-      final users = await FirebaseService().getAllUsers();
-      showDialog(
-        context: context,
-        builder: (context) => StatefulBuilder(
-          builder: (context, innerSetState) => AlertDialog(
-            title: const Text('select_user').tr(),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: users.length,
-                itemBuilder: (context, index) {
-                  final user = users[index];
-                  final userId = user['id'] as String;
-                  final name = user['name'] as String? ?? 'unknown'.tr();
-                  final email = user['email'] as String? ?? '';
-                  return CheckboxListTile(
-                    title: Text(name),
-                    subtitle: Text(email),
-                    value: selectedUserIds.contains(userId),
-                    onChanged: (bool? value) {
-                      innerSetState(() {
-                        if (value == true) {
-                          selectedUserIds.add(userId);
-                        } else {
-                          selectedUserIds.remove(userId);
-                        }
-                      });
-                      setState(() {});
-                    },
-                  );
-                },
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('done').tr(),
-              ),
-            ],
-          ),
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('load_users_failed'.tr(args: [e.toString()]))),
-      );
-    }
   }
 }

@@ -58,20 +58,9 @@ class LoginPageState extends State<LoginPage> {
 
       await _ensureUserDocument(user);
 
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-
-      final role = doc.data()?['role'] ?? 'member';
-
       if (!mounted) return;
 
-      if (role == 'admin') {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => AdminstratorScreen(user: user)));
-      } else {
-        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-      }
+      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
 
     } catch (e) {
       if (mounted) {
@@ -105,72 +94,74 @@ class LoginPageState extends State<LoginPage> {
           )
         ],
       ),
-      body: Stack(
-        children: [
-          Center(
-            child: isLoading
-                ? const CircularProgressIndicator()
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.asset('assets/images/logo.jpg', height: 140),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                        child: Text(
-                          "welcome".tr(),
-                          style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Center(
+              child: isLoading
+                  ? const CircularProgressIndicator()
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset('assets/images/logo.jpg', height: 140),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                          child: Text(
+                            "welcome".tr(),
+                            style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                          ),
                         ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(10),
-                        child: Text("welcomeSubtitle".tr(), textAlign: TextAlign.center),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
-                        child: ElevatedButtonVariants.auto(
-                          onPressed: handleSignIn,
-                          icon: Image.asset('assets/images/google.png', height: 20),
-                          child: Text('auth.signin_with_google'.tr()),
+                        Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Text("welcomeSubtitle".tr(), textAlign: TextAlign.center),
                         ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/about');
-                            },
-                            child: Text('aboutUs'.tr()),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
+                          child: ElevatedButtonVariants.auto(
+                            onPressed: handleSignIn,
+                            icon: Image.asset('assets/images/google.png', height: 20),
+                            child: Text('auth.signin_with_google'.tr()),
                           ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/terms-and-conditions');
-                            },
-                            child: Text('termsConditions'.tr()),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/privacy-policy');
-                            },
-                            child: Text('privacyPolicy'.tr()),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-          ),
-          Positioned(
-            bottom: 16,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Text(
-                'copyright'.tr(args: ['${DateTime.now().year}']),
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/about');
+                              },
+                              child: Text('aboutUs'.tr()),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/terms-and-conditions');
+                              },
+                              child: Text('termsConditions'.tr()),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/privacy-policy');
+                              },
+                              child: Text('privacyPolicy'.tr()),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+            ),
+            Positioned(
+              bottom: 16,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Text(
+                  'copyright'.tr(args: ['${DateTime.now().year}']),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

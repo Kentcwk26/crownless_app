@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+enum IconTextLayout {
+  horizontal,
+  vertical,
+}
+
 class ChatInfoWidget extends StatelessWidget {
   final String text;
   final Color? backgroundColor;
@@ -52,152 +57,84 @@ class ChatInfoWidget extends StatelessWidget {
 }
 
 class IconText extends StatelessWidget {
-  final IconData icon;
+  final Widget? leading;
   final String text;
   final Color? iconColor;
-  final Color? textColor;
+  final Color textColor;
   final double? iconSize;
   final double? fontSize;
-  final FontWeight? fontWeight;
-  final TextAlign? textAlign;
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
   final MainAxisAlignment mainAxisAlignment;
-  final CrossAxisAlignment crossAxisAlignment;
   final bool showIcon;
   final int? maxLines;
-  final TextOverflow? overflow;
+  final IconTextLayout layout;
 
   const IconText({
     super.key,
-    required this.icon,
+    this.leading,
     required this.text,
     this.iconColor,
-    this.textColor,
+    required this.textColor,
     this.iconSize,
     this.fontSize,
-    this.fontWeight,
-    this.textAlign,
     this.padding,
     this.margin,
     this.mainAxisAlignment = MainAxisAlignment.start,
-    this.crossAxisAlignment = CrossAxisAlignment.center,
     this.showIcon = true,
     this.maxLines,
-    this.overflow,
+    this.layout = IconTextLayout.horizontal,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: margin,
-      padding: padding ?? const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: mainAxisAlignment,
-        crossAxisAlignment: crossAxisAlignment,
-        mainAxisSize: MainAxisSize.min,
-        spacing: 8.0,
-        children: [
-          if (showIcon) ...[
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 10),
-              child: Icon(
-                icon,
-                color: iconColor ?? Theme.of(context).colorScheme.onSurface,
-                size: iconSize ?? 12,
-              ),
-            )
-          ],
-          Flexible(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: textColor ?? Theme.of(context).colorScheme.onSurface,
-                fontSize: fontSize ?? 14,
-                fontWeight: fontWeight ?? FontWeight.normal,
-              ),
-              textAlign: textAlign,
-              maxLines: maxLines,
-              overflow: overflow,
-            ),
-          ),
-        ],
+    final Widget? iconWidget = showIcon
+        ? (leading ??
+            Icon(
+              Icons.help_outline,
+              color: iconColor ?? Colors.grey,
+              size: iconSize ?? 18,
+            ))
+        : null;
+
+    final textWidget = Expanded(
+      child: Text(
+        text,
+        maxLines: maxLines,
+        overflow: TextOverflow.visible,
+        softWrap: true,
+        textAlign: layout == IconTextLayout.vertical
+            ? TextAlign.center
+            : TextAlign.start,
+        style: TextStyle(
+          color: textColor,
+          fontSize: fontSize ?? 14,
+        ),
       ),
     );
-  }
-}
 
-class IconTextWidget extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  final Color? iconColor;
-  final Color? textColor;
-  final double? iconSize;
-  final double? fontSize;
-  final FontWeight? fontWeight;
-  final TextAlign? textAlign;
-  final EdgeInsetsGeometry? padding;
-  final EdgeInsetsGeometry? margin;
-  final MainAxisAlignment mainAxisAlignment;
-  final CrossAxisAlignment crossAxisAlignment;
-  final bool showIcon;
-  final int? maxLines;
-  final TextOverflow? overflow;
-
-  const IconTextWidget({
-    super.key,
-    required this.icon,
-    required this.text,
-    this.iconColor,
-    this.textColor,
-    this.iconSize,
-    this.fontSize,
-    this.fontWeight,
-    this.textAlign,
-    this.padding,
-    this.margin,
-    this.mainAxisAlignment = MainAxisAlignment.start,
-    this.crossAxisAlignment = CrossAxisAlignment.center,
-    this.showIcon = true,
-    this.maxLines,
-    this.overflow,
-  });
-
-  @override
-  Widget build(BuildContext context) {
     return Container(
       margin: margin,
-      padding: padding ?? const EdgeInsets.symmetric(vertical: 4),
-      child: Column(
-        mainAxisAlignment: mainAxisAlignment,
-        crossAxisAlignment: crossAxisAlignment,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (showIcon) ...[
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 10),
-              child: Icon(
-                icon,
-                color: iconColor ?? Theme.of(context).colorScheme.onSurface,
-                size: iconSize ?? 60,
-              ),
+      padding: padding ?? const EdgeInsets.all(4),
+      child: layout == IconTextLayout.horizontal
+          ? Row(
+              mainAxisAlignment: mainAxisAlignment,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ?iconWidget,
+                if (iconWidget != null) const SizedBox(width: 8),
+                textWidget,
+              ],
             )
-          ],
-          Flexible(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: textColor ?? Theme.of(context).colorScheme.onSurface,
-                fontSize: fontSize ?? 14,
-                fontWeight: fontWeight ?? FontWeight.normal,
-              ),
-              textAlign: textAlign,
-              maxLines: maxLines,
-              overflow: overflow,
+          : Column(
+              mainAxisAlignment: mainAxisAlignment,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ?iconWidget,
+                if (iconWidget != null) const SizedBox(height: 4),
+                textWidget,
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -206,6 +143,7 @@ class IconTextVariants {
   static Widget success({
     required String text,
     IconData icon = Icons.check_circle,
+    IconTextLayout layout = IconTextLayout.horizontal,
     double? iconSize,
     double? fontSize,
     EdgeInsetsGeometry? padding,
@@ -214,9 +152,10 @@ class IconTextVariants {
     bool showIcon = true,
     int? maxLines,
   }) {
-    return IconTextWidget(
-      icon: icon,
+    return IconText(
+      leading: Icon(Icons.check_circle, color: Colors.green),
       text: text,
+      layout: layout,
       iconColor: Colors.green,
       textColor: Colors.green.shade700,
       iconSize: iconSize,
@@ -232,6 +171,7 @@ class IconTextVariants {
   static Widget error({
     required String text,
     IconData icon = Icons.error,
+    IconTextLayout layout = IconTextLayout.horizontal,
     double? iconSize,
     double? fontSize,
     EdgeInsetsGeometry? padding,
@@ -240,9 +180,10 @@ class IconTextVariants {
     bool showIcon = true,
     int? maxLines,
   }) {
-    return IconTextWidget(
-      icon: icon,
+    return IconText(
+      leading: Icon(Icons.error, color: Colors.red),
       text: text,
+      layout: layout,
       iconColor: Colors.red,
       textColor: Colors.red.shade700,
       iconSize: iconSize,
@@ -258,6 +199,7 @@ class IconTextVariants {
   static Widget warning({
     required String text,
     IconData icon = Icons.warning,
+    IconTextLayout layout = IconTextLayout.horizontal,
     double? iconSize,
     double? fontSize,
     EdgeInsetsGeometry? padding,
@@ -266,9 +208,10 @@ class IconTextVariants {
     bool showIcon = true,
     int? maxLines,
   }) {
-    return IconTextWidget(
-      icon: icon,
+    return IconText(
+      leading: Icon(Icons.warning, color: Colors.orange),
       text: text,
+      layout: layout,
       iconColor: Colors.orange,
       textColor: Colors.orange.shade700,
       iconSize: iconSize,
@@ -284,6 +227,7 @@ class IconTextVariants {
   static Widget info({
     required String text,
     IconData icon = Icons.info,
+    IconTextLayout layout = IconTextLayout.horizontal,
     double? iconSize,
     double? fontSize,
     EdgeInsetsGeometry? padding,
@@ -292,9 +236,10 @@ class IconTextVariants {
     bool showIcon = true,
     int? maxLines,
   }) {
-    return IconTextWidget(
-      icon: icon,
+    return IconText(
+      leading: Icon(Icons.info, color: Colors.blue),
       text: text,
+      layout: layout,
       iconColor: Colors.blue,
       textColor: Colors.blue.shade700,
       iconSize: iconSize,
@@ -310,6 +255,7 @@ class IconTextVariants {
   static Widget neutral({
     required String text,
     IconData icon = Icons.help_outline,
+    IconTextLayout layout = IconTextLayout.horizontal,
     double? iconSize,
     double? fontSize,
     EdgeInsetsGeometry? padding,
@@ -318,9 +264,10 @@ class IconTextVariants {
     bool showIcon = true,
     int? maxLines,
   }) {
-    return IconTextWidget(
-      icon: icon,
+    return IconText(
+      leading: Icon(icon, color: Colors.grey),
       text: text,
+      layout: layout,
       iconColor: Colors.grey,
       textColor: Colors.grey.shade700,
       iconSize: iconSize,
@@ -330,6 +277,86 @@ class IconTextVariants {
       mainAxisAlignment: mainAxisAlignment,
       showIcon: showIcon,
       maxLines: maxLines,
+    );
+  }
+}
+
+class DividerText extends StatelessWidget {
+  final String text;
+  final double lineThickness;
+  final Color lineColor;
+  final double fontSize;
+  final Color textColor;
+  final double minSpacing;
+
+  const DividerText({
+    super.key,
+    this.text = "Stay Tuned",
+    this.lineThickness = 1.2,
+    this.lineColor = Colors.black,
+    required this.fontSize,
+    this.textColor = Colors.black,
+    this.minSpacing = 20.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: text,
+            style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          maxLines: 1,
+          textDirection: TextDirection.ltr,
+        )..layout(maxWidth: constraints.maxWidth);
+
+        final textWidth = textPainter.width;
+
+        final availableWidth = constraints.maxWidth;
+
+        double spacing = (availableWidth - textWidth) * 0.05;
+        spacing = spacing.clamp(minSpacing, 24.0);
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Divider(
+                  color: lineColor,
+                  thickness: lineThickness,
+                ),
+              ),
+              SizedBox(width: spacing),
+              Flexible(
+                child: Text(
+                  text,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+              ),
+              SizedBox(width: spacing),
+              Expanded(
+                child: Divider(
+                  color: lineColor,
+                  thickness: lineThickness,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

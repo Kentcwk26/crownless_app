@@ -62,10 +62,9 @@ class NotificationsPage extends StatelessWidget {
 
               if (snapshot.hasError) {
                 return Center(
-                  child: IconTextWidget(
-                    icon: Icons.nearby_error_outlined,
+                  child: IconText(
+                    leading: Icon(Icons.nearby_error_outlined, color: Colors.red),
                     text: 'error_loading'.tr(args: [snapshot.error.toString()]),
-                    iconColor: Colors.red,
                     textColor: Colors.red,
                   ),
                 );
@@ -75,8 +74,8 @@ class NotificationsPage extends StatelessWidget {
 
               if (docs.isEmpty) {
                 return Center(
-                  child: IconTextWidget(
-                    icon: Icons.notifications_off,
+                  child: IconText(
+                    leading: Icon(Icons.notifications_off, color: Colors.grey),
                     text: 'no_notifications'.tr(),
                     textColor: Colors.grey,
                   ),

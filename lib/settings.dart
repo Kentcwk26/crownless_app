@@ -26,23 +26,27 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: Text('settings'.tr()),
       ),
-      body: Column(
-        spacing: 8.0,
-        children: [
-          SwitchListTile(
-            title: Text('theme'.tr()),
-            value: widget.isDarkMode,
-            onChanged: (_) => widget.toggleTheme?.call(),
-            secondary: const Icon(Icons.brightness_6),
-          ),
-          ListTile(
-            title: Text('language'.tr()),
-            subtitle: Text(_getLanguageName(_selectedLocale)),
-            leading: const Icon(Icons.language),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () => _showLanguageDialog(context),
-          ),
-        ],
+      body: SafeArea(
+        child: Column(
+          spacing: 8.0,
+          children: [
+            SwitchListTile(
+              title: Text('theme'.tr()),
+              value: widget.isDarkMode,
+              onChanged: (_) => widget.toggleTheme?.call(),
+              secondary: const Icon(Icons.brightness_6),
+            ),
+            ListTile(
+              title: Text('language'.tr()),
+              subtitle: Text(_getLanguageName(_selectedLocale)),
+              leading: const Icon(Icons.language),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () => _showLanguageDialog(context),
+            ),
+            Spacer(),
+            Text('${"appVersion".tr()} v1.0.0').tr()
+          ],
+        ),
       ),
     );
   }

@@ -4,7 +4,7 @@
   "title": "Tajuk",
   "body": "Kandungan",
   "title_and_body_required": "Tajuk dan kandungan diperlukan",
-  "manage_users": "Urus Pengguna",
+  "manageUsers": "Urus Pengguna",
   "select_user": "Pilih Pengguna",
   "select_users": "Sila pilih sekurang-kurangnya satu pengguna",
   "select_users_count": "Pilih Pengguna ({} dipilih)",
