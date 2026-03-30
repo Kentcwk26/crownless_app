@@ -61,7 +61,7 @@ class _CarouselSectionState extends State<CarouselSection> {
 
   @override
   Widget build(BuildContext context) {
-    final double effectiveHeight = MediaQuery.of(context).size.height * 0.6;
+    final double effectiveHeight = MediaQuery.of(context).size.height * 0.7;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),

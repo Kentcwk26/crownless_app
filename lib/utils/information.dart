@@ -301,6 +301,14 @@ class DividerText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    final int lineFlex = screenWidth >= 1200
+        ? 5
+        : screenWidth >= 600
+            ? 3
+            : 1;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final textPainter = TextPainter(
@@ -316,7 +324,6 @@ class DividerText extends StatelessWidget {
         )..layout(maxWidth: constraints.maxWidth);
 
         final textWidth = textPainter.width;
-
         final availableWidth = constraints.maxWidth;
 
         double spacing = (availableWidth - textWidth) * 0.05;
@@ -328,6 +335,7 @@ class DividerText extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Expanded(
+                flex: lineFlex,
                 child: Divider(
                   color: lineColor,
                   thickness: lineThickness,
@@ -348,6 +356,7 @@ class DividerText extends StatelessWidget {
               ),
               SizedBox(width: spacing),
               Expanded(
+                flex: lineFlex,
                 child: Divider(
                   color: lineColor,
                   thickness: lineThickness,

@@ -8,6 +8,519 @@ import '../../utils/color_buttons.dart';
 import '../../utils/date_formatter.dart';
 import '../../utils/role_formatter.dart';
 
+class ManageNotificationsPage extends StatefulWidget {
+  const ManageNotificationsPage({super.key});
+
+  @override
+  State<ManageNotificationsPage> createState() => _ManageNotificationsPageState();
+}
+
+class _ManageNotificationsPageState extends State<ManageNotificationsPage> {
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("manage_notifications").tr(),
+      ),
+
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildMenuCard(
+            icon: Icons.notifications_active,
+            title: 'send_notification'.tr(),
+            subtitle: 'send_notification_desc'.tr(),
+            onTap: () => _showSendNotificationDialog(context),
+          ),
+
+          _buildMenuCard(
+            icon: Icons.history,
+            title: 'notification_history'.tr(),
+            subtitle: 'notification_history_desc'.tr(),
+            onTap: () {
+              // TODO: navigate to history page
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(title),
+        subtitle: Text(subtitle),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  void _showSendNotificationDialog(BuildContext context) {
+    final titleController = TextEditingController();
+    final bodyController = TextEditingController();
+    bool sendToAll = true;
+    Set<String> selectedUserIds = {};
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('send_notification'.tr()),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: InputDecoration(labelText: 'title'.tr()),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: bodyController,
+                  decoration: InputDecoration(labelText: 'body'.tr()),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: sendToAll,
+                      onChanged: (value) => setState(() => sendToAll = value ?? true),
+                    ),
+                    Expanded(child: const Text('send_to_all_users').tr()),
+                  ],
+                ),
+                if (!sendToAll)
+                  ElevatedButton(
+                    onPressed: () async => await _selectUsers(
+                      context,
+                      selectedUserIds,
+                      setState,
+                    ),
+                    child: Text(
+                      'select_users_count'
+                          .tr(args: [selectedUserIds.length.toString()]),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('cancel').tr(),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final title = titleController.text.trim();
+                final body = bodyController.text.trim();
+
+                if (title.isEmpty || body.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('title_and_body_required'.tr())),
+                  );
+                  return;
+                }
+
+                List<String>? userIds;
+
+                if (!sendToAll) {
+                  userIds = selectedUserIds.toList();
+                  if (userIds.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('select_users'.tr())),
+                    );
+                    return;
+                  }
+                }
+
+                try {
+                  await FirebaseService().sendNotification(
+                    title: title,
+                    body: body,
+                    userIds: userIds,
+                  );
+
+                  Navigator.pop(context);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('notification_sent'.tr())),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'notification_failed'
+                            .tr(namedArgs: {'error': e.toString()}),
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: const Text('send').tr(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectUsers(
+    BuildContext context,
+    Set<String> selectedUserIds,
+    StateSetter setState,
+  ) async {
+    final users = await FirebaseService().getAllUsers();
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, innerSetState) => AlertDialog(
+          title: const Text('select_user').tr(),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                final user = users[index];
+                final userId = user['id'] as String;
+
+                return CheckboxListTile(
+                  title: Text(user['name'] ?? ''),
+                  subtitle: Text(user['email'] ?? ''),
+                  value: selectedUserIds.contains(userId),
+                  onChanged: (value) {
+                    innerSetState(() {
+                      if (value == true) {
+                        selectedUserIds.add(userId);
+                      } else {
+                        selectedUserIds.remove(userId);
+                      }
+                    });
+                    setState(() {});
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('done').tr(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ManageDancersPage extends StatefulWidget {
+  const ManageDancersPage({super.key});
+
+  @override
+  State<ManageDancersPage> createState() => _ManageDancersPageState();
+}
+
+class _ManageDancersPageState extends State<ManageDancersPage> {
+  bool _isLoading = true;
+  bool _isAdmin = false;
+  bool _isSaving = false;
+  bool _hasChanges = false;
+
+  List<Map<String, dynamic>> _dancers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _init();
+  }
+
+  Future<void> _init() async {
+    await _checkAdminRole();
+    if (_isAdmin) await _load();
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  Future<void> _checkAdminRole() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+
+      _isAdmin = doc.data()?['role'] == 'admin';
+    } catch (_) {
+      _isAdmin = false;
+    }
+  }
+
+  int _extractNum(String key) =>
+      int.tryParse(key.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+
+  Future<void> _load() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('about')
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return;
+
+    final data = snapshot.docs.first.data();
+
+    final Map<String, dynamic> dancersMap =
+        (data['dancers'] as Map<String, dynamic>?) ?? {};
+
+    final keys = dancersMap.keys.toList()
+      ..sort((a, b) => _extractNum(a).compareTo(_extractNum(b)));
+
+    _dancers = keys.map((k) {
+      final d = dancersMap[k] as Map<String, dynamic>;
+      return {
+        'name': d['name'] ?? '',
+        'role': d['role'] ?? '',
+        'mbti': d['mbti'] ?? '',
+        'quote': d['quote'] ?? '',
+        'image': d['image'] ?? '',
+      };
+    }).toList();
+
+    _hasChanges = false;
+  }
+
+  Future<void> _save() async {
+    setState(() => _isSaving = true);
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('about')
+          .limit(1)
+          .get();
+
+      final docRef = snapshot.docs.isNotEmpty
+          ? snapshot.docs.first.reference
+          : FirebaseFirestore.instance.collection('about').doc();
+
+      final Map<String, dynamic> dancersMap = {};
+
+      for (int i = 0; i < _dancers.length; i++) {
+        dancersMap['d${i + 1}'] = {
+          'name': _dancers[i]['name'],
+          'role': _dancers[i]['role'],
+          'mbti': _dancers[i]['mbti'],
+          'quote': _dancers[i]['quote'],
+          'image': _dancers[i]['image'],
+          'order': i + 1,
+        };
+      }
+
+      await docRef.set({
+        'dancers': dancersMap,
+      }, SetOptions(merge: true));
+
+      _hasChanges = false;
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Dancers saved successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  void _add() {
+    setState(() {
+      _dancers.add({
+        'name': '',
+        'role': '',
+        'mbti': '',
+        'quote': '',
+        'image': '',
+      });
+      _hasChanges = true;
+    });
+  }
+
+  void _delete(int index) {
+    setState(() {
+      _dancers.removeAt(index);
+      _hasChanges = true;
+    });
+  }
+
+  void _reorder(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) newIndex--;
+      final item = _dancers.removeAt(oldIndex);
+      _dancers.insert(newIndex, item);
+      _hasChanges = true;
+    });
+  }
+
+  Widget _buildAccessDenied() => const Center(
+        child: Text('Access Denied'),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (!_isAdmin) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Manage Dancers')),
+        body: _buildAccessDenied(),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Manage Dancers'),
+      ),
+      body: ReorderableListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+        itemCount: _dancers.length,
+        onReorder: _reorder,
+        buildDefaultDragHandles: false,
+        itemBuilder: (context, index) {
+          final dancer = _dancers[index];
+
+          return Card(
+            key: ValueKey(index),
+            margin: const EdgeInsets.only(bottom: 12),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      ReorderableDragStartListener(
+                        index: index,
+                        child: const Icon(Icons.drag_handle),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Dancer ${index + 1}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _delete(index),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  TextFormField(
+                    initialValue: dancer['name'],
+                    decoration: const InputDecoration(
+                      labelText: 'Name',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (v) {
+                      dancer['name'] = v;
+                      _hasChanges = true;
+                    },
+                  ),
+                  const SizedBox(height: 10),
+
+                  TextFormField(
+                    initialValue: dancer['role'],
+                    decoration: const InputDecoration(
+                      labelText: 'Role',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (v) {
+                      dancer['role'] = v;
+                      _hasChanges = true;
+                    },
+                  ),
+                  const SizedBox(height: 10),
+
+                  TextFormField(
+                    initialValue: dancer['mbti'],
+                    decoration: const InputDecoration(
+                      labelText: 'MBTI (optional)',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (v) {
+                      dancer['mbti'] = v;
+                      _hasChanges = true;
+                    },
+                  ),
+                  const SizedBox(height: 10),
+
+                  TextFormField(
+                    initialValue: dancer['quote'],
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'Quote',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (v) {
+                      dancer['quote'] = v;
+                      _hasChanges = true;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        spacing: 10,
+        children: [
+          FloatingActionButton(
+            heroTag: "add",
+            onPressed: _add,
+            child: const Icon(Icons.add),
+          ),
+          FloatingActionButton(
+            heroTag: "save",
+            onPressed: _hasChanges ? _save : null,
+            child: const Icon(Icons.save),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ManageUsersPage extends StatefulWidget {
   const ManageUsersPage({super.key});
 
@@ -612,14 +1125,6 @@ class _PrivacyPolicyAdminPageState extends State<PrivacyPolicyAdminPage> with Si
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       buildDefaultDragHandles: false,
       onReorder: (oldIndex, newIndex) => _onReorder(lang, oldIndex, newIndex),
-      footer: Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: OutlinedButton.icon(
-          onPressed: () => _addSection(lang),
-          icon: const Icon(Icons.add),
-          label: const Text('Add Section'),
-        ),
-      ),
       itemCount: sections.length,
       itemBuilder: (context, sectionIndex) {
         final section = sections[sectionIndex];
@@ -772,27 +1277,27 @@ class _PrivacyPolicyAdminPageState extends State<PrivacyPolicyAdminPage> with Si
             controller: _tabController,
             tabs: _tabs.map((l) => Tab(text: l)).toList(),
           ),
-          actions: [
-            if (_isSaving)
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              )
-            else
-              IconButton(
-                icon: const Icon(Icons.save_outlined),
-                tooltip: 'Save all',
-                onPressed: _saveAll,
-              ),
-          ],
         ),
         body: TabBarView(
           controller: _tabController,
           children: _tabs.map(_buildTabContent).toList(),
+        ),
+        floatingActionButton: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          spacing: 10,
+          children: [
+            FloatingActionButton(
+              heroTag: "add",
+              onPressed: () => _addSection(_tabs[_tabController.index]),
+              child: const Icon(Icons.add),
+            ),
+            FloatingActionButton(
+              heroTag: "save",
+              onPressed: _hasChanges ? _saveAll : null,
+              child: const Icon(Icons.save),
+            ),
+          ],
         ),
       ),
     );
@@ -1045,14 +1550,6 @@ class _TACAdminPageState extends State<TACAdminPage> with SingleTickerProviderSt
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       buildDefaultDragHandles: false,
       onReorder: (oldIndex, newIndex) => _onReorder(lang, oldIndex, newIndex),
-      footer: Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: OutlinedButton.icon(
-          onPressed: () => _addSection(lang),
-          icon: const Icon(Icons.add),
-          label: const Text('Add Section'),
-        ),
-      ),
       itemCount: sections.length,
       itemBuilder: (context, sectionIndex) {
         final section = sections[sectionIndex];
@@ -1205,28 +1702,317 @@ class _TACAdminPageState extends State<TACAdminPage> with SingleTickerProviderSt
             controller: _tabController,
             tabs: _tabs.map((l) => Tab(text: l)).toList(),
           ),
-          actions: [
-            if (_isSaving)
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              )
-            else
-              IconButton(
-                icon: const Icon(Icons.save_outlined),
-                tooltip: 'Save all',
-                onPressed: _saveAll,
-              ),
-          ],
         ),
         body: TabBarView(
           controller: _tabController,
           children: _tabs.map(_buildTabContent).toList(),
         ),
+        floatingActionButton: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          spacing: 10,
+          children: [
+            FloatingActionButton(
+              heroTag: "add",
+              onPressed: () => _addSection(_tabs[_tabController.index]),
+              child: const Icon(Icons.add),
+            ),
+            FloatingActionButton(
+              heroTag: "save",
+              onPressed: _hasChanges ? _saveAll : null,
+              child: const Icon(Icons.save),
+            ),
+          ],
+        )
+      ),
+    );
+  }
+}
+
+class ManageFAQPage extends StatefulWidget {
+  const ManageFAQPage({super.key});
+
+  @override
+  State<ManageFAQPage> createState() => _ManageFAQPageState();
+}
+
+class _ManageFAQPageState extends State<ManageFAQPage> with SingleTickerProviderStateMixin {
+  static const _langFieldMap = {
+    'English': 'faq-eng',
+    'Malay': 'faq-bm',
+    'Chinese': 'faq-cn',
+  };
+
+  static const _tabs = ['English', 'Malay', 'Chinese'];
+
+  late final TabController _tabController;
+
+  bool _isLoading = true;
+  bool _isAdmin = false;
+  bool _isSaving = false;
+  bool _hasChanges = false;
+
+  final Map<String, List<Map<String, String>>> _data = {
+    'English': [],
+    'Malay': [],
+    'Chinese': [],
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: _tabs.length, vsync: this);
+    _init();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _init() async {
+    await _checkAdminRole();
+    if (_isAdmin) await _loadAll();
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  Future<void> _checkAdminRole() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+
+      _isAdmin = doc.data()?['role'] == 'admin';
+    } catch (_) {
+      _isAdmin = false;
+    }
+  }
+
+  int _extractNum(String key) => int.tryParse(key.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+
+  Future<void> _loadAll() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('about')
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return;
+
+    final raw = snapshot.docs.first.data();
+
+    for (final lang in _tabs) {
+      final fieldKey = _langFieldMap[lang]!;
+      final Map<String, dynamic> faqMap =
+          (raw[fieldKey] as Map<String, dynamic>?) ?? {};
+
+      final sortedKeys = faqMap.keys.toList()
+        ..sort((a, b) => _extractNum(a).compareTo(_extractNum(b)));
+
+      _data[lang] = sortedKeys.map((key) {
+        final map = (faqMap[key] as Map<String, dynamic>?) ?? {};
+        return {
+          'question': map['question']?.toString() ?? '',
+          'answer': map['answer']?.toString() ?? '',
+        };
+      }).toList();
+    }
+
+    _hasChanges = false;
+  }
+
+  Future<void> _saveAll() async {
+    setState(() => _isSaving = true);
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('about')
+          .limit(1)
+          .get();
+
+      final docRef = snapshot.docs.isNotEmpty
+          ? snapshot.docs.first.reference
+          : FirebaseFirestore.instance.collection('about').doc();
+
+      final Map<String, dynamic> toSave = {};
+
+      for (final lang in _tabs) {
+        final fieldKey = _langFieldMap[lang]!;
+        final Map<String, dynamic> map = {};
+
+        final list = _data[lang]!;
+        for (int i = 0; i < list.length; i++) {
+          map['q${i + 1}'] = {
+            'question': list[i]['question'],
+            'answer': list[i]['answer'],
+          };
+        }
+
+        toSave[fieldKey] = map;
+      }
+
+      toSave['faq-last-updated'] = FieldValue.serverTimestamp();
+
+      await docRef.set(toSave, SetOptions(merge: true));
+
+      _hasChanges = false;
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('FAQ saved successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  void _addItem(String lang) {
+    setState(() {
+      _data[lang]!.add({'question': '', 'answer': ''});
+      _hasChanges = true;
+    });
+  }
+
+  void _deleteItem(String lang, int index) {
+    setState(() {
+      _data[lang]!.removeAt(index);
+      _hasChanges = true;
+    });
+  }
+
+  void _onReorder(String lang, int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) newIndex--;
+      final item = _data[lang]!.removeAt(oldIndex);
+      _data[lang]!.insert(newIndex, item);
+      _hasChanges = true;
+    });
+  }
+
+  Widget _buildTab(String lang) {
+    final list = _data[lang]!;
+
+    return ReorderableListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      itemCount: list.length,
+      onReorder: (o, n) => _onReorder(lang, o, n),
+      buildDefaultDragHandles: false,
+      itemBuilder: (context, i) {
+        final item = list[i];
+
+        return Card(
+          key: ValueKey('$lang-$i'),
+          margin: const EdgeInsets.only(bottom: 12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    ReorderableDragStartListener(
+                      index: i,
+                      child: const Icon(Icons.drag_handle),
+                    ),
+                    const SizedBox(width: 8),
+                    Text('FAQ ${i + 1}',
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _deleteItem(lang, i),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  initialValue: item['question'],
+                  decoration: const InputDecoration(
+                    labelText: 'Question',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (v) {
+                    item['question'] = v;
+                    _hasChanges = true;
+                  },
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  initialValue: item['answer'],
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Answer',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (v) {
+                    item['answer'] = v;
+                    _hasChanges = true;
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (!_isAdmin) {
+      return const Scaffold(
+        body: Center(child: Text('Access Denied')),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Manage FAQ'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: _tabs.map((e) => Tab(text: e)).toList(),
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: _tabs.map(_buildTab).toList(),
+      ),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        spacing: 10,
+        children: [
+          FloatingActionButton(
+            heroTag: "add",
+            onPressed: () => _addItem(_tabs[_tabController.index]),
+            child: const Icon(Icons.add),
+          ),
+          FloatingActionButton(
+            heroTag: "save",
+            onPressed: _hasChanges ? _saveAll : null,
+            child: const Icon(Icons.save),
+          ),
+        ],
       ),
     );
   }

@@ -67,7 +67,7 @@ class AdminstratorScreen extends StatelessWidget {
                     ),
                     ListTile(
                       leading: const Icon(Icons.supervised_user_circle),
-                      title: Text('manageUsers'.tr()),
+                      title: Text('manage_users'.tr()),
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ManageUsersPage())),
                     ),
                     ListTile(

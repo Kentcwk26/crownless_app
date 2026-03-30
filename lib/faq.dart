@@ -2,95 +2,158 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import 'main.dart';
+import 'utils/date_formatter.dart';
 
-class FAQPage extends StatelessWidget {
+class FAQPage extends StatefulWidget {
   const FAQPage({super.key});
+
+  @override
+  State<FAQPage> createState() => _FAQPageState();
+}
+
+class _FAQPageState extends State<FAQPage> {
+  static const _langFieldMap = {
+    'en': 'faq-eng',
+    'ms': 'faq-bm',
+    'zh': 'faq-cn',
+  };
+
+  Future<({String lastUpdated, List<dynamic> items})> _fetchFAQ(String langCode) async {
+    final fieldKey = _langFieldMap[langCode] ?? 'faq-eng';
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('about')
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return (items: [], lastUpdated: '');
+
+    final data = snapshot.docs.first.data();
+    final Map<String, dynamic> faqMap = (data[fieldKey] as Map<String, dynamic>?) ?? {};
+
+    final rawTimestamp = data['faq-last-updated'];
+
+    final lastUpdated = rawTimestamp is Timestamp
+        ? DateFormatter.formatLongDate(context, rawTimestamp)
+        : '';
+
+    int extractNum(String key) =>
+        int.tryParse(key.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+
+    final sortedKeys = faqMap.keys.toList()
+      ..sort((a, b) => extractNum(a).compareTo(extractNum(b)));
+
+    final items = sortedKeys.map((key) {
+      final map = (faqMap[key] as Map<String, dynamic>?) ?? {};
+
+      return (
+        question: map['question']?.toString() ?? '',
+        answer: map['answer']?.toString() ?? '',
+      );
+    }).where((e) => e.question.isNotEmpty).toList();
+
+    return (items: items, lastUpdated: lastUpdated);
+  }
+
+  String _getCurrentLangCode() => context.locale.languageCode;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("faq".tr())),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: const Text('FAQ'),
+      ),
+      body: FutureBuilder(
+        future: _fetchFAQ(_getCurrentLangCode()),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return const Center(child: Text('Failed to load FAQ.'));
+          }
+
+          final items = snapshot.data?.items ?? [];
+          final lastUpdated = snapshot.data?.lastUpdated ?? '';
+
+          if (items.isEmpty) {
+            return const Center(child: Text('No FAQ available.'));
+          }
+
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 10,
                   children: [
-                    const Center(
-                      child: Icon(Icons.help_outline, size: 60),
-                    ),
-                    const SizedBox(height: 12),
-                    Center(
-                      child: Text(
-                        "faqSubtitle".tr(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildFAQItem(
-                      question: "What is Crownless?",
-                      answer: "Crownless is a dynamic dance group that embodies the spirit of creativity, passion, and unity. We are a collective of talented dancers who come together to create captivating performances that inspire and entertain audiences worldwide.",
-                    ),
-                    _buildFAQItem(
-                      question: "Where can I watch Crownless perform?",
-                      answer: "You can catch our performances at various events, competitions, and showcases. We also share our dance videos on our social media platforms and YouTube channel. Follow us to stay updated on our latest performances and upcoming events!",
+                    Icon(Icons.question_answer_outlined, size: 48),
+                    Text("faqSubtitle".tr(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ],
                 ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(10),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.queue_play_next),
-                  onPressed: () => Navigator.pushNamed(context, '/inquiries'),
-                  label: const Text("moreQuestionsToAsk").tr(),
-                ),
-              )
-            ),
-            const Footer(),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildFAQItem({required String question, required String answer}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        childrenPadding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
-        ),
-        collapsedShape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
-        ),
-        backgroundColor: Colors.grey[50],
-        collapsedBackgroundColor: Colors.grey[50],
-        title: Text(
-          question,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-        ),
-        children: [
-          Text(
-            answer,
-            style: const TextStyle(fontSize: 14, height: 1.4),
-          ),
-        ],
+              ...items.map((item) {
+                final isDark = Theme.of(context).brightness == Brightness.dark;
+
+                return Theme(
+                  data: Theme.of(context).copyWith(
+                    dividerColor: Colors.transparent,
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                  ),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white : Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: ExpansionTile(
+                      tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+                      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      shape: const RoundedRectangleBorder(
+                        side: BorderSide.none,
+                      ),
+                      collapsedShape: const RoundedRectangleBorder(
+                        side: BorderSide.none,
+                      ),
+                      title: Text(
+                        item.question,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black // always black as you want
+                        ),
+                      ),
+                      children: [
+                        Text(
+                          item.answer,
+                          style: TextStyle(
+                            height: 1.5,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Text(
+                  'Last updated: $lastUpdated',
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -125,11 +188,10 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
     final Map<String, dynamic> policyMap = (data[fieldKey] as Map<String, dynamic>?) ?? {};
 
     final rawTimestamp = data['tac-last-updated'];
-    String lastUpdated = '';
-    if (rawTimestamp is Timestamp) {
-      final dt = rawTimestamp.toDate();
-      lastUpdated = DateFormat('dd MMM yyyy').format(dt); // e.g. 30 Mar 2026
-    }
+
+    final lastUpdated = rawTimestamp is Timestamp
+        ? DateFormatter.formatLongDate(context, rawTimestamp)
+        : '';
 
     int extractNum(String key) =>
         int.tryParse(key.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
@@ -293,11 +355,10 @@ class _TACPageState extends State<TACPage> {
     final Map<String, dynamic> policyMap = (data[fieldKey] as Map<String, dynamic>?) ?? {};
 
     final rawTimestamp = data['tac-last-updated'];
-    String lastUpdated = '';
-    if (rawTimestamp is Timestamp) {
-      final dt = rawTimestamp.toDate();
-      lastUpdated = DateFormat('dd MMM yyyy').format(dt); // e.g. 30 Mar 2026
-    }
+
+    final lastUpdated = rawTimestamp is Timestamp
+        ? DateFormatter.formatLongDate(context, rawTimestamp)
+        : '';
 
     int extractNum(String key) =>
         int.tryParse(key.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;

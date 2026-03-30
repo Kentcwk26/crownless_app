@@ -44,7 +44,10 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: () => _showLanguageDialog(context),
             ),
             Spacer(),
-            Text('${"appVersion".tr()} v1.0.0').tr()
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14.0),
+              child: Text('${"appVersion".tr()} v1.0.0'),
+            )
           ],
         ),
       ),
@@ -54,8 +57,8 @@ class _SettingsPageState extends State<SettingsPage> {
   String _getLanguageName(Locale locale) {
     const languageNames = {
       'en': 'English',
-      'zh': 'Chinese (中文)',
       'ms': 'Malay (Bahasa Melayu)',
+      'zh': 'Chinese (中文)',
     };
     return languageNames[locale.languageCode] ?? locale.languageCode;
   }
@@ -70,8 +73,8 @@ class _SettingsPageState extends State<SettingsPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildLanguageOption(context, const Locale('en'), 'English'),
-              _buildLanguageOption(context, const Locale('zh'), 'Mandarin (中文)'),
-              _buildLanguageOption(context, const Locale('ms'), 'Malay (Bahasa Melayu)'),
+              _buildLanguageOption(context, const Locale('ms'), 'Bahasa Melayu'),
+              _buildLanguageOption(context, const Locale('zh'), '中文'),
             ],
           ),
         );

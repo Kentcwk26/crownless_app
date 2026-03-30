@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'screens/admin/adminstrator.dart';
 import 'settings.dart';
 import 'utils/color_buttons.dart';
 
@@ -40,18 +40,23 @@ class LoginPageState extends State<LoginPage> {
     setState(() => isLoading = true);
 
     try {
-      final googleSignIn = GoogleSignIn.instance;
-      await googleSignIn.initialize(
-        serverClientId: '15035334254-eoek90ejsd8nu5geal0qco032cggr56d.apps.googleusercontent.com',
-      );
-      final googleUser = await googleSignIn.authenticate();
-      final googleAuth = googleUser.authentication;
+      UserCredential result;
 
-      final credential = GoogleAuthProvider.credential(
-        idToken: googleAuth.idToken,
-      );
-
-      final UserCredential result = await FirebaseAuth.instance.signInWithCredential(credential);
+      if (kIsWeb) {
+        final googleProvider = GoogleAuthProvider();
+        result = await FirebaseAuth.instance.signInWithPopup(googleProvider);
+      } else {
+        final googleSignIn = GoogleSignIn.instance;
+        await googleSignIn.initialize(
+          serverClientId: '15035334254-eoek90ejsd8nu5geal0qco032cggr56d.apps.googleusercontent.com',
+        );
+        final googleUser = await googleSignIn.authenticate();
+        final googleAuth = googleUser.authentication;
+        final credential = GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken,
+        );
+        result = await FirebaseAuth.instance.signInWithCredential(credential);
+      }
 
       final user = result.user;
       if (user == null) throw Exception('No user found after sign-in');
@@ -59,7 +64,6 @@ class LoginPageState extends State<LoginPage> {
       await _ensureUserDocument(user);
 
       if (!mounted) return;
-
       Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
 
     } catch (e) {
@@ -103,17 +107,13 @@ class LoginPageState extends State<LoginPage> {
                   : Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Image.asset('assets/images/logo.jpg', height: 140),
+                        Image.asset('assets/images/logo.jpg', height: 200),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                           child: Text(
                             "welcome".tr(),
                             style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                           ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(10),
-                          child: Text("welcomeSubtitle".tr(), textAlign: TextAlign.center),
                         ),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),

@@ -181,16 +181,16 @@ class _InquiryPageState extends State<InquiryPage> {
 
   String? validateName(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return "Name is required";
+      return "name_required".tr();
     }
 
     final regex = RegExp(r'^[a-zA-Z ]+$');
     if (!regex.hasMatch(value.trim())) {
-      return "Only alphabets allowed";
+      return "only_alphabets_allowed".tr();
     }
 
     if (value.trim().split(" ").length < 2) {
-      return "Enter full name";
+      return "full_name_required".tr();
     }
 
     return null;
@@ -198,12 +198,12 @@ class _InquiryPageState extends State<InquiryPage> {
 
   String? validateMalaysiaPhone(String? value) {
     if (value == null || value.isEmpty) {
-      return "Contact is required";
+      return "contact_number_required".tr();
     }
 
     final regex = RegExp(r'^01[0-9]{8,9}$');
     if (!regex.hasMatch(value)) {
-      return "Invalid Malaysia phone number";
+      return "invalid_malaysia_phone_number".tr();
     }
 
     return null;
@@ -263,10 +263,8 @@ class _InquiryPageState extends State<InquiryPage> {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: const Text("Confirm Exit"),
-              content: const Text(
-                "Are you sure you want to leave this page? Your data will not be saved.",
-              ),
+              title: const Text("confirm_exit_title").tr(),
+              content: const Text("confirm_exit_subtitle").tr(),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
@@ -329,7 +327,6 @@ class _InquiryPageState extends State<InquiryPage> {
     );
   }
 
-  // ✅ SECTION 1
   Widget _section1() {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -337,12 +334,12 @@ class _InquiryPageState extends State<InquiryPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 8.0,
         children: [
-          const Text("* Please select *", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          const Text("please_select", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)).tr(),
 
           RadioListTile<String>(
             value: "inquiries",
             groupValue: selectedType,
-            title: const Text("Inquiries"),
+            title: const Text("inquiries").tr(),
             onChanged: (value) {
               setState(() {
                 selectedType = value;
@@ -354,7 +351,7 @@ class _InquiryPageState extends State<InquiryPage> {
           RadioListTile<String>(
             value: "audition",
             groupValue: selectedType,
-            title: const Text("Dance Audition"),
+            title: const Text("dance_audition").tr(),
             onChanged: (value) {
               setState(() {
                 selectedType = value;
@@ -370,7 +367,7 @@ class _InquiryPageState extends State<InquiryPage> {
             onNext: () {
               if (selectedType == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Please select an option")),
+                  SnackBar(content: const Text("please_select_an_option").tr()),
                 );
                 return;
               }
@@ -382,54 +379,59 @@ class _InquiryPageState extends State<InquiryPage> {
     );
   }
 
-  // ✅ SECTION 2
   Widget _section2() {
     return buildScrollableSection(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(10),
         child: Form(
           key: _inquiryFormKey,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 10,
             children: [
-              const Text("We will ask you some questions upon your inquiries in this section"),
-      
-              const SizedBox(height: 12),
-      
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: const Text ("inquiries_section").tr(),
+              ),
+
+              const Text("auth.please_provide_your_name", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
+
               TextFormField(
                 controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: "Full Name",
+                decoration: InputDecoration(
+                  hintText: "auth.your_answer".tr(),
                   border: OutlineInputBorder(),
                 ),
                 validator: validateName,
               ),
-      
-              const SizedBox(height: 12),
-      
+
+              const Text("auth.please_provide_your_contact", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
+
               TextFormField(
                 controller: contactController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: "Contact Number",
+                decoration: InputDecoration(
+                  hintText: "auth.your_answer".tr(),
                   border: OutlineInputBorder(),
                 ),
                 validator: validateMalaysiaPhone,
               ),
-      
-              const SizedBox(height: 12),
-      
+
+              const Text("auth.please_provide_your_inquiry", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
+
               TextFormField(
                 controller: inquiryController,
                 maxLines: 4,
-                decoration: const InputDecoration(
-                  labelText: "Your Inquiry",
+                decoration: InputDecoration(
+                  hintText: "auth.your_answer".tr(),
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                validator: (v) => v == null || v.isEmpty ? "required".tr() : null,
               ),
-      
-              const SizedBox(height: 12),
-      
+
+              const Text("auth.please_upload_supporting_document", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
+
               FileUploadCard(
                 file: inquiryFile,
                 onPick: pickInquiryFile,
@@ -447,8 +449,8 @@ class _InquiryPageState extends State<InquiryPage> {
       
                   if (inquiryFile == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Upload a document"),
+                      SnackBar(
+                        content: Text("auth.please_upload_a_document").tr(),
                       ),
                     );
                     return;
@@ -464,59 +466,77 @@ class _InquiryPageState extends State<InquiryPage> {
     );
   }
 
-  // ✅ SECTION 3
   Widget _section3() {
     return buildScrollableSection(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Form(
           key: _auditionFormKey,
           child: Column(
-            spacing: 14.0,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 10.0,
             children: [
-              const Text("We will ask you some questions upon dance audition in this section"),
-      
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: const Text("audition_section").tr(),
+              ),
+
+              const Text("auth.please_provide_your_name", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
+
               TextFormField(
                 controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: "Full Name",
+                decoration: InputDecoration(
+                  hintText: "auth.your_answer".tr(),
                   border: OutlineInputBorder(),
                 ),
                 validator: validateName,
               ),
+
+              const Text("auth.please_provide_your_contact", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
       
               TextFormField(
                 controller: contactController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: "Contact Number",
+                decoration: InputDecoration(
+                  hintText: "auth.your_answer".tr(),
                   border: OutlineInputBorder(),
                 ),
                 validator: validateMalaysiaPhone,
               ),
       
+              const Text("auth.do_you_have_transportation", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
+
               Row(
                 children: [
-                  const Expanded(
-                    flex: 2,
-                    child: Text("Do you have transportation?"),
-                  ),
                   Expanded(
-                    flex: 1,
-                    child: DropdownButtonFormField<String>(
-                      value: hasTransport,
-                      items: const [
-                        DropdownMenuItem(value: "yes", child: Text("Yes")),
-                        DropdownMenuItem(value: "no", child: Text("No")),
-                      ],
+                    child: RadioListTile<String>(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      value: "yes",
+                      groupValue: hasTransport,
+                      title: const Text("yes").tr(),
                       onChanged: (value) {
                         setState(() => hasTransport = value);
                       },
-                      validator: (v) => v == null ? "Required" : null,
+                    ),
+                  ),
+                  Expanded(
+                    child: RadioListTile<String>(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      value: "no",
+                      groupValue: hasTransport,
+                      title: const Text("no").tr(),
+                      onChanged: (value) {
+                        setState(() => hasTransport = value);
+                      },
                     ),
                   ),
                 ],
               ),
+
+              const Text("auth.please_upload_your_dance_video", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
       
               FileUploadCard(
                 file: auditionVideo,
@@ -536,8 +556,8 @@ class _InquiryPageState extends State<InquiryPage> {
       
                   if (auditionVideo == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Upload a video"),
+                      SnackBar(
+                        content: Text("auth.please_upload_a_video").tr(),
                       ),
                     );
                     return;
@@ -553,7 +573,6 @@ class _InquiryPageState extends State<InquiryPage> {
     );
   }
 
-  // ✅ SECTION 4
   Widget _section4() {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -561,35 +580,21 @@ class _InquiryPageState extends State<InquiryPage> {
         spacing: 14.0,
         children: [
           const Text(
-            "Review & Submit",
-            style: TextStyle(fontSize: 18),
-          ),
-
-          ListTile(
-            title: const Text("Type"),
-            subtitle: Text(selectedType ?? "-"),
-          ),
-
-          ListTile(
-            title: const Text("Styles"),
-            subtitle: Text(
-              selectedStyles.isEmpty
-                  ? "-"
-                  : selectedStyles.join(", "),
-            ),
-          ),
+            "auth.submit_form",
+            style: TextStyle(fontSize: 16),
+          ).tr(),
 
           const Spacer(),
 
           if (isSubmitting) ...[
-            const Text("Uploading..."),
+            const Text("auth.uploading").tr(),
             LinearProgressIndicator(value: uploadProgress),
           ],
 
           navigationButtons(
             onBack: previousPage,
             onNext: isSubmitting ? null : handleSubmit,
-            nextText: "Submit",
+            nextText: "auth.submit".tr(),
           ),
         ],
       ),
@@ -618,21 +623,21 @@ class _InquiryPageState extends State<InquiryPage> {
   Widget navigationButtons({
     required VoidCallback? onBack,
     required VoidCallback? onNext,
-    String nextText = "Next",
+    String nextText = "auth.next",
   }) {
     return Row(
       children: [
         Expanded(
           child: ElevatedButton(
             onPressed: onBack,
-            child: const Text("Back"),
+            child: const Text("auth.back").tr(),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton(
             onPressed: onNext,
-            child: Text(nextText),
+            child: Text(nextText).tr(),
           ),
         ),
       ],

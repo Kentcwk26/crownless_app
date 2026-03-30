@@ -8,38 +8,38 @@ class DateFormatter {
     return context.locale.toString();
   }
 
-  static String fullDate(BuildContext context, DateTime date) {
-    return DateFormat.yMMMMEEEEd(_locale(context)).format(date);
-  }
-
-  static String fullDateTime(BuildContext context, DateTime date) {
-    return DateFormat.yMMMMEEEEd(_locale(context))
-            .add_jm()
-            .format(date);
-  }
-
-  static String shortDateTime(BuildContext context, DateTime date) {
-    return DateFormat.yMd(_locale(context))
-            .add_jm()
-            .format(date);
-  }
-
+    /// dd/MM/yyyy
   static String shortDate(BuildContext context, DateTime date) {
-    return DateFormat.yMd(_locale(context)).format(date);
+    return DateFormat('dd/MM/yyyy', _locale(context)).format(date);
   }
 
-  static String format24Hour(BuildContext context, DateTime date) {
-    return DateFormat.Hm(_locale(context)).format(date);
+  /// dd/MM/yyyy (EEEE)
+  static String fullDate(BuildContext context, DateTime date) {
+    return DateFormat('dd/MM/yyyy (EEEE)', _locale(context)).format(date);
   }
 
-  static String format12Hour(BuildContext context, DateTime date) {
-    return DateFormat.jm(_locale(context)).format(date);
+  /// dd/MM/yyyy (EEEE) hh:mm:ss aa
+  static String fullDateTime(BuildContext context, DateTime date) {
+    return DateFormat('dd/MM/yyyy (EEEE) hh:mm:ss aa', _locale(context))
+        .format(date);
   }
 
+  /// dd/MM/yyyy hh:mm aa
+  static String shortDateTime(BuildContext context, DateTime date) {
+    return DateFormat('dd/MM/yyyy hh:mm aa', _locale(context)).format(date);
+  }
+
+  /// hh:mm:ss aa
   static String format12HourMinuteSeconds(BuildContext context, DateTime date) {
-    return DateFormat.jms(_locale(context)).format(date);
+    return DateFormat('hh:mm:ss aa', _locale(context)).format(date);
   }
 
+  /// HH:mm (24-hour)
+  static String format24Hour(BuildContext context, DateTime date) {
+    return DateFormat('HH:mm', _locale(context)).format(date);
+  }
+
+  /// Timestamp wrappers
   static String formatDateTime(BuildContext context, Timestamp timestamp) {
     return fullDateTime(context, timestamp.toDate());
   }
@@ -52,9 +52,9 @@ class DateFormatter {
     return fullDate(context, timestamp.toDate());
   }
 
-  // ========================
-  // 🕒 SMART DISPLAY (CHAT STYLE)
-  // ========================
+  static String format12Hour(BuildContext context, DateTime date) {
+    return DateFormat.jm(_locale(context)).format(date);
+  }
 
   static String formatTimestamp(BuildContext context, Timestamp timestamp) {
     final date = timestamp.toDate();
@@ -112,13 +112,8 @@ class DateFormatter {
           : 'days_ago'.plural(days, args: [days.toString()]);
     }
 
-    // fallback to locale date
     return shortDate(context, date);
   }
-
-  // ========================
-  // 🔧 HELPERS
-  // ========================
 
   static bool _isSameDay(DateTime a, DateTime b) {
     return a.year == b.year &&

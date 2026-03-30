@@ -121,11 +121,7 @@ class NotificationsPage extends StatelessWidget {
 
                     trailing: createdAt != null
                         ? Text(
-                            DateFormatter.timeAgo(
-                              context,
-                              createdAt,
-                              short: true,
-                            ),
+                            DateFormatter.timeAgo(context, createdAt),
                             style: TextStyle(
                               fontSize: 12,
                               color: isRead ? Colors.grey : Colors.blue,
@@ -177,8 +173,7 @@ class NotificationsPage extends StatelessWidget {
                       );
                     },
 
-                    onLongPress: () =>
-                        firebaseService.markNotificationAsRead(docs[index].id),
+                    onLongPress: () => firebaseService.markNotificationAsRead(docs[index].id),
                   );
                 },
               );

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:video_player/video_player.dart';
@@ -651,10 +652,10 @@ class FileUploadCard extends StatelessWidget {
   Widget _emptyState() {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: const [
+      children: [
         Icon(Icons.cloud_upload_outlined, size: 40),
         SizedBox(height: 8),
-        Text("Tap to upload"),
+        Text("auth.tap_to_upload").tr(),
       ],
     );
   }
