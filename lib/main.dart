@@ -233,11 +233,8 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 CarouselSection(
                   imagePaths: [
-                    'assets/images/logo.jpg',
                     'assets/images/photo1.jpg',
                     'assets/images/photo2.jpg',
-                    'assets/images/photo3.jpg',
-                    'assets/images/photo4.jpg',
                   ],
                 ),
                 Padding(

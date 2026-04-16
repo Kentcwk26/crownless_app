@@ -31,11 +31,11 @@ class AboutPage extends StatelessWidget {
                     padding: const EdgeInsets.all(10.0),
                     child: const Text("dc_description", textAlign: TextAlign.justify).tr(),
                   ),
-                  CarouselSection(
-                    imagePaths: [
-                      'assets/images/photo3.jpg', 'assets/images/photo4.jpg', 
-                    ],
-                  ),
+                  // CarouselSection(
+                  //   imagePaths: [
+                  //     'assets/images/photo3.jpg', 'assets/images/photo4.jpg', 
+                  //   ],
+                  // ),
                   MeetOurTeamPage(),
                   SupportUs(),
                   const Text("haveQuestionsOrFeedback", textAlign: TextAlign.center).tr(),
